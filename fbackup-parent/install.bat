@@ -1,0 +1,1 @@
+mvn install --settings=C:\Users\Administrator\.m2\settings_jdk8_2.xml -Dmaven.test.skip=true -Dmaven.javadoc.skip=true

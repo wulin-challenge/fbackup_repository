@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fbackup>
+	<!-- 服务类型 server 服务端必须为 server -->
+	<server-type>server</server-type>
+	<!-- 服务的端口号,必须与application.properties中的server-port一致 -->
+	<server-port>5555</server-port>
+	<!-- 服务的上下文,必须与application.properties中的server.context-path一致 -->
+	<server-context>fbackup-server</server-context>
+	<server>
+		<!-- zookeeper的地址 -->
+		<zookeeper-address>127.0.0.1:2181</zookeeper-address>
+		<!-- zookeeper的超时时间 -->
+		<zookeeper-timeout>5555</zookeeper-timeout>
+		<!-- 服务端的编号(若是监狱,则监狱编号) -->
+		<server-number>51001</server-number>
+		<!-- 服务端的名称(若是监狱,则是监狱名称) -->
+		<server-name>服务端名称</server-name>
+		<store-directory-list>
+				<!-- store-type="static" 该类型才是无用 -->
+<!-- 			<store-directory store-type="static">D:\temp\fbackup\store-directory1</store-directory> -->
+			<!-- 服务端备份客户端数据库文件的目录 -->
+			<store-directory store-type="file">D:\temp\fbackup\store-directory2</store-directory>
+		</store-directory-list>
+	</server>
+</fbackup>

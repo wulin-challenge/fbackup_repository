@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fbackup>
+	<!-- 服务类型 client 客户端必须为 client -->
+	<server-type>client</server-type>
+	<!-- 服务的端口号,必须与application.properties中的server-port一致 -->
+	<server-port>5556</server-port>
+	<!-- 服务的上下文,必须与application.properties中的server.context-path一致 -->
+	<server-context>fbackup-client</server-context>
+	<client>
+		<!-- zookeeper的地址 -->
+		<zookeeper-address>192.168.0.2:2181</zookeeper-address>
+		<!-- zookeeper的超时时间 -->
+		<zookeeper-timeout>5555</zookeeper-timeout>
+		<!-- 服务端的编号(若是监狱,则监狱编号) -->
+		<client-number>客户端编号</client-number>
+		<!-- 服务端的名称(若是监狱,则是监狱名称) -->
+		<client-name>客户端名称</client-name>
+		<read-directory-list>
+			<!-- 静态资源下载的配置
+				"staticRootPath":"E:/CAS_Platform/nginx-1.9.5/statics",
+				"staticServiceUrl":"http://192.168.0.251:9898",
+				"staticType":"static",
+				"databaseUsername":"yzpt",
+				"databasePassword":"123456789",
+				"databaseUrl":"jdbc:oracle:thin:@192.168.0.222:1521:orcl",
+				"databaseDriver":"oracle.jdbc.driver.OracleDriver"
+				
+				说明:
+				staticRootPath : 地方监狱平台静态资源的nginx的根目录
+				staticServiceUrl : 地方监狱平台静态资源的访问url
+				staticType : 静态类型 , 值暂时就是    static
+				
+				databaseUsername : 地方监狱狱政数据库的用户名
+				databasePassword : 地方监狱狱政数据库的密码
+				databaseUrl : 地方监狱狱政数据库的url
+				databaseDriver : 地方监狱狱政数据库的驱动
+			
+			 -->
+			<read-directory directory-type="picture">
+				<![CDATA[
+					[{
+						"staticRootPath":"E:/CAS_Platform/nginx-1.9.5/statics",
+						"staticServiceUrl":"http://192.168.0.251:9898",
+						"staticType":"static",
+						"databaseUsername":"yzpt",
+						"databasePassword":"123456789",
+						"databaseUrl":"jdbc:oracle:thin:@192.168.0.222:1521:orcl",
+						"databaseDriver":"oracle.jdbc.driver.OracleDriver"
+					}]
+				]]>
+			</read-directory>
+			<!-- 地方监狱需要备份的根目录 -->
+			<read-directory directory-type="database">D:\image</read-directory>
+		</read-directory-list>
+	</client>
+
+</fbackup>

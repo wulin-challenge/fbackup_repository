@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fbackup>
+	<server-type>client</server-type>
+	<server-port>5556</server-port>
+	<server-context>fbackup-client</server-context>
+	<client>
+		<zookeeper-address>10.0.0.12:2181</zookeeper-address>
+		<zookeeper-timeout>5555</zookeeper-timeout>
+		<client-number>5199</client-number>
+		<client-name>客户端名称1</client-name>
+		<read-directory-list>
+		<!-- 
+			<read-directory directory-type="picture">
+				<![CDATA[
+					[{
+						"staticRootPath":"E:/CAS_Platform/nginx-1.9.5/statics",
+						"staticServiceUrl":"http://192.168.0.251:9898",
+						"staticType":"static",
+						"databaseUsername":"yzpt",
+						"databasePassword":"123456789",
+						"databaseUrl":"jdbc:oracle:thin:@192.168.0.222:1521:orcl",
+						"databaseDriver":"oracle.jdbc.driver.OracleDriver"
+					}]
+				]]>
+			</read-directory>
+			-->
+			<read-directory directory-type="database">F:\temp4\data</read-directory>
+		</read-directory-list>
+	</client>
+
+</fbackup>
