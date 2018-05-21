@@ -67,7 +67,7 @@ public class ExpireTheadManagement<V> {
 	}
 	
 	/**
-	 * 添加一个新的执行任务,并保证一定能添加成功,若添加失败,将会被挂起,直到过期线程将过期线程池元素回收
+	 * 添加一个新的执行任务,并保证一定能添加成功,若添加失败,将会被挂起,直到子线程释放或者过期线程将过期线程池元素回收
 	 * @param executeTask 新的执行任务
 	 * @return 返回新添加的执行任务的FutureTask对象,该对象一定不会为null
 	 * @throws InterruptedException

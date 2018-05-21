@@ -4,9 +4,6 @@ import java.util.Iterator;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.locks.ReentrantLock;
-
-import org.mockito.internal.matchers.Contains;
-
 import com.bjhy.fbackup.common.domain.ClientFileTransfer;
 import com.bjhy.fbackup.common.domain.XmlFbackup;
 import com.bjhy.fbackup.common.util.LoggerUtils;
