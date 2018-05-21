@@ -3,6 +3,9 @@ package com.bjhy.fbackup.server.base;
 import java.util.Iterator;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.locks.ReentrantLock;
+
+import org.mockito.internal.matchers.Contains;
 
 import com.bjhy.fbackup.common.domain.ClientFileTransfer;
 import com.bjhy.fbackup.common.domain.XmlFbackup;
@@ -18,7 +21,7 @@ public class BaseServerQueue {
 	/**
 	 * 队列锁
 	 */
-	private static final Object queueLock = new Object();
+	private static ReentrantLock queueLock = new ReentrantLock();
 	
 	/**
 	 * 客户端队列
@@ -35,21 +38,46 @@ public class BaseServerQueue {
 	 * @param client
 	 */
 	public static void putClientQueue(XmlFbackup client){
-		synchronized (queueLock) {
-			String serverId = client.getServerId();
-			Iterator<XmlFbackup> iterator = clientQueue.iterator();
-			while(iterator.hasNext()){
-				XmlFbackup alreadyClient = iterator.next();
-				String serverId2 = alreadyClient.getServerId();
-				if(serverId2.equals(serverId)){
-					return;
-				}
+		try {
+			queueLock.lock();
+			if(contains(client)){
+				return;
 			}
 			
 			try {
 				clientQueue.put(client);
 			} catch (InterruptedException e) {
 				LoggerUtils.error("在向  客户端队列  装填 (client) 时出错", e);
+			}
+			
+		} finally {
+			if(queueLock.isLocked()){
+				queueLock.unlock();
+			}
+		}
+	}
+	
+	/**
+	 * 队列中是否已经包含该客户端
+	 * @param client
+	 * @return
+	 */
+	public static boolean contains(XmlFbackup client){
+		try {
+			queueLock.lock();
+			String serverId = client.getServerId();
+			Iterator<XmlFbackup> iterator = clientQueue.iterator();
+			while(iterator.hasNext()){
+				XmlFbackup alreadyClient = iterator.next();
+				String serverId2 = alreadyClient.getServerId();
+				if(serverId2.equals(serverId)){
+					return true;
+				}
+			}
+			return false;
+		} finally {
+			if(queueLock.isLocked()){
+				queueLock.unlock();
 			}
 		}
 	}

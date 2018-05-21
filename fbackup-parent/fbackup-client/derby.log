@@ -1,0 +1,13 @@
+----------------------------------------------------------------
+Mon May 21 10:22:31 CST 2018:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.12.1.1 - (1704137): instance a816c00e-0163-8081-5ca4-00000d43b7a0 
+on database directory D:\software\helpProgramming\git_client\git\workspace_directory\self_directory\fbackup_workspace\fbackup_repository\fbackup-parent\fbackup-client\db\fbackup_client_derby with class loader sun.misc.Launcher$AppClassLoader@18b4aac2 
+Loaded from file:/D:/repository/org/apache/derby/derby/10.12.1.1/derby-10.12.1.1.jar
+java.vendor=Oracle Corporation
+java.runtime.version=1.8.0_161-b12
+user.dir=D:\software\helpProgramming\git_client\git\workspace_directory\self_directory\fbackup_workspace\fbackup_repository\fbackup-parent\fbackup-client
+os.name=Windows 10
+os.arch=amd64
+os.version=10.0
+derby.system.home=null
+Database Class Loader started - derby.database.classpath=''

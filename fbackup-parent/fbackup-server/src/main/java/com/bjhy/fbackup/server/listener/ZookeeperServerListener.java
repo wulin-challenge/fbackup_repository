@@ -33,9 +33,11 @@ public class ZookeeperServerListener implements ZookeeperCuratorEvent{
 				//是否同步当前客户端
 				Boolean syncClient = ServerCenterUtil.isSyncClient(client);
 				if(syncClient){
-					BaseServerQueue.putClientQueue(client);
-					//记录客户端通知zookeeper日志
-					writeClientLog(client);
+					if(!BaseServerQueue.contains(client)){
+						BaseServerQueue.putClientQueue(client);
+						//记录客户端通知zookeeper日志
+						writeClientLog(client);
+					}
 				}
 				
 				XmlFbackup client2 = SeriUtil.unserializeProtoStuffToObj(data, XmlFbackup.class);

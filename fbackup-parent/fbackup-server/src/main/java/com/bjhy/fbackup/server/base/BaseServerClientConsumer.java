@@ -25,6 +25,9 @@ import com.bjhy.fbackup.server.util.ClientHttpUtil;
 import com.bjhy.fbackup.server.util.ServerCenterUtil;
 import com.bjhy.fbackup.server.util.ServerFileUtil;
 
+import cn.wulin.thread.expire.thread.ExecuteTask;
+import cn.wulin.thread.expire.thread.ExpireTheadManagement;
+
 /**
  * 客户端消费者
  * @author wubo
@@ -63,9 +66,15 @@ public class BaseServerClientConsumer {
 	
 	/**
 	 * 客户端传输的最大运行线程数
+	 * 已经被废弃 被 下面 客户端文件传输管理者 替代
 	 */
-	
+	@Deprecated
 	private final FixedThreadQueue<String> clientFileTransferQueue = new FixedThreadQueue<String>(5);
+	
+	/**
+	 * 客户端文件传输管理者
+	 */
+	private ExpireTheadManagement<String> clientFileTransferManagement = new ExpireTheadManagement<>(ServerCenterUtil.getManagementMaxSize(), ServerCenterUtil.getFirstElementSurvivalTime(), ServerCenterUtil.getThreadPoolCapacity());
 	
 	
 	
@@ -165,11 +174,17 @@ public class BaseServerClientConsumer {
 	private void dealWithFileTransferTask() throws InterruptedException, ExecutionException{
 		while(true){
 			final ClientFileTransfer clientFileTransfer = BaseServerQueue.getClientFileTransferQueue().take();
-			clientFileTransferQueue.execute(new FixedThreadExecute<String>(){
+			clientFileTransferManagement.putNewTask(new ExecuteTask<String>(){
 				@Override
-				public String execute() {
+				public String callTask() throws InterruptedException {
 					try {
+						if(ServerCenterUtil.isOpenDetailLogInfo()){
+							LoggerUtils.info("传输开始: "+clientFileTransfer.toString());
+						}
 						deaWithFileTransferConsumer(clientFileTransfer);
+						if(ServerCenterUtil.isOpenDetailLogInfo()){
+							LoggerUtils.info("传输结束: "+clientFileTransfer.toString());
+						}
 					} catch (Exception e) {
 						LoggerUtils.error(e.getMessage());
 					}
@@ -178,6 +193,28 @@ public class BaseServerClientConsumer {
 			});
 		}
 	}
+	
+//	/**
+//	 * 多线程处理文件传输任务
+//	 * @throws InterruptedException
+//	 * @throws ExecutionException
+//	 */
+//	private void dealWithFileTransferTask() throws InterruptedException, ExecutionException{
+//		while(true){
+//			final ClientFileTransfer clientFileTransfer = BaseServerQueue.getClientFileTransferQueue().take();
+//			clientFileTransferQueue.execute(new FixedThreadExecute<String>(){
+//				@Override
+//				public String execute() {
+//					try {
+//						deaWithFileTransferConsumer(clientFileTransfer);
+//					} catch (Exception e) {
+//						LoggerUtils.error(e.getMessage());
+//					}
+//					return null;
+//				}
+//			});
+//		}
+//	}
 	
 	/**
 	 * 处理文件传输的消费消费者

@@ -184,4 +184,10 @@ public class ClientFileTransfer {
 	public void setClient(XmlFbackup client) {
 		this.client = client;
 	}
+
+	@Override
+	public String toString() {
+		StringBuffer sb = new StringBuffer(clientName+"("+clientNumber+")的 "+fileName+" 相对路径:("+relativeFilePath+")");
+		return sb.toString();
+	}
 }

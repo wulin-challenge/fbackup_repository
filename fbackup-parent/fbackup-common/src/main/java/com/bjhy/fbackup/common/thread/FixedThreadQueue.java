@@ -12,10 +12,11 @@ import com.bjhy.fbackup.common.util.FileUtil;
 
 /**
  * 固定线程队列(即可以边加人任务边执行的线程控制类,并且还可以收集所有的返回值)
- * @author Administrator
- *
+ * 该类已经被废弃,使用新的 ExpireTheadManagement 替代
+ * @author wubo
  * @param <V> 返回的类型
  */
+@Deprecated
 public class FixedThreadQueue<V> {
 	/**
 	 * 线程队列列

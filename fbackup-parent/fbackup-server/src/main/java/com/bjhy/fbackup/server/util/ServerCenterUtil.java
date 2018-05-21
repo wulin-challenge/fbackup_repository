@@ -3,6 +3,8 @@ package com.bjhy.fbackup.server.util;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.bjhy.fbackup.common.domain.Version;
 import com.bjhy.fbackup.common.domain.XmlFbackup;
 import com.bjhy.fbackup.common.extension.ExtensionLoader;
@@ -113,6 +115,55 @@ public class ServerCenterUtil {
 		byte[] versionByte = SeriUtil.serializeProtoStuffTobyteArray(version, Version.class);
 		zookeeperCuratorConfig.setNodeData(versionNodePath, versionByte);
 	}
-
-
+	
+	/**
+	 * 最大能容纳多少固定线程池元素
+	 */
+	public static int getManagementMaxSize(){
+		String managementMaxSize = CenterPropUtil.getProperty("management_max_size",false);
+		if(StringUtils.isBlank(managementMaxSize)){
+			managementMaxSize = "10";
+		}
+		return Integer.parseInt(managementMaxSize);
+	}
+	
+	/**
+	 * 当第一个元素的线程池满了后,最多能存活多久(单位:毫秒)
+	 */
+	public static int getFirstElementSurvivalTime(){
+		String firstElementSurvivalTime = CenterPropUtil.getProperty("management_first_element_survival_time",false);
+		
+		if(StringUtils.isBlank(firstElementSurvivalTime)){
+			firstElementSurvivalTime = "900000";
+		}
+		return Integer.parseInt(firstElementSurvivalTime);
+	}
+	
+	/**
+	 * 线程池的容量
+	 * @return
+	 */
+	public static int getThreadPoolCapacity(){
+		String threadPoolCapacity = CenterPropUtil.getProperty("management_thread_pool_capacity",false);
+		if(StringUtils.isBlank(threadPoolCapacity)){
+			return Runtime.getRuntime().availableProcessors();
+		}
+		return Integer.parseInt(threadPoolCapacity);
+	}
+	
+	/**
+	 * 是否开启详细日志信息
+	 * @return
+	 */
+	public static boolean isOpenDetailLogInfo(){
+		String detailLogInfo = CenterPropUtil.getProperty("is_open_detail_log_info",true);
+		if(StringUtils.isBlank(detailLogInfo)){
+			return true;
+		}
+		
+		if(detailLogInfo.equalsIgnoreCase("true")){
+			return true;
+		}
+		return false;
+	}
 }
