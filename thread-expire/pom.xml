@@ -4,6 +4,27 @@
 	<groupId>cn.wulin</groupId>
 	<artifactId>thread-expire</artifactId>
 	<version>1.0.1-SNAPSHOT</version>
+	
+		<!-- common properties -->
+	<properties>
+		<encoding>UTF-8</encoding>
+		<java.version>1.8</java.version>
+		<nexusAddress>192.168.0.2:81</nexusAddress>
+	</properties>
+
+	<!-- deploy -->
+	<distributionManagement>
+		<repository>
+			<id>nexus-releases</id>
+			<name>nexus releases Repository</name>
+			<url>http://${nexusAddress}/nexus/content/repositories/releases/</url>
+		</repository>
+		<snapshotRepository>
+			<id>nexus-snapshots</id>
+			<name>nexus snapshot Repository</name>
+			<url>http://${nexusAddress}/nexus/content/repositories/snapshots/</url>
+		</snapshotRepository>
+	</distributionManagement>
 
 	<dependencies>
 		<dependency>
