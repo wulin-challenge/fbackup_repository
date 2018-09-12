@@ -4,7 +4,7 @@
 	<server-port>5556</server-port>
 	<server-context>fbackup-client</server-context>
 	<client>
-		<zookeeper-address>192.168.0.2:2181</zookeeper-address>
+		<zookeeper-address>localhost:2181</zookeeper-address>
 		<zookeeper-timeout>5555</zookeeper-timeout>
 		<client-number>5199</client-number>
 		<client-name>客户端名称1</client-name>
@@ -24,7 +24,7 @@
 				]]>
 			</read-directory>
 			-->
-			<read-directory directory-type="database">D:/repository</read-directory>
+			<read-directory directory-type="database">F:\resources\temp\temp4\clientData</read-directory>
 		</read-directory-list>
 	</client>
 

@@ -1,6 +1,9 @@
 package com.bjhy.fbackup.common.zookeeper.curator;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.recipes.cache.TreeCache;
@@ -146,6 +149,27 @@ public class ZookeeperCuratorConfig {
 		} catch (Exception e) {
 			LoggerUtils.error(path+" 删除节点失败!", e);
 		}
+	}
+	
+	/**
+	 * 得到某个节点下孩子的全路径
+	 * @param path
+	 * @return
+	 */
+	public List<String> getChildrenFullPathList(String path){
+		try {
+			if(curatorFramework.checkExists().forPath(path) != null){
+				List<String> fullPathList = new ArrayList<>();
+				List<String> forPath = curatorFramework.getChildren().forPath(path);
+				for (String childrenPath : forPath) {
+					fullPathList.add(path+"/"+childrenPath);
+				}
+				return fullPathList;
+			}
+		} catch (Exception e) {
+			LoggerUtils.error(path+" 获取孩子节点失败!", e);
+		}
+		return null;
 	}
 	
 	/**

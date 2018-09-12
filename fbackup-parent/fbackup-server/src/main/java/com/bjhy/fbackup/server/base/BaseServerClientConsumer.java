@@ -15,6 +15,7 @@ import com.bjhy.fbackup.common.domain.DerbyPage;
 import com.bjhy.fbackup.common.domain.XmlClient;
 import com.bjhy.fbackup.common.domain.XmlFbackup;
 import com.bjhy.fbackup.common.extension.ExtensionLoader;
+import com.bjhy.fbackup.common.interrupt.Interrupt;
 import com.bjhy.fbackup.common.thread.FixedThreadExecute;
 import com.bjhy.fbackup.common.thread.FixedThreadQueue;
 import com.bjhy.fbackup.common.util.ConstantUtil;
@@ -25,6 +26,8 @@ import com.bjhy.fbackup.server.util.ClientHttpUtil;
 import com.bjhy.fbackup.server.util.ServerCenterUtil;
 import com.bjhy.fbackup.server.util.ServerFileUtil;
 
+import cn.wulin.ioc.extension.InterfaceExtensionLoader;
+import cn.wulin.ioc.util.UrlUtils;
 import cn.wulin.thread.expire.thread.ExecuteTask;
 import cn.wulin.thread.expire.thread.ExpireTheadManagement;
 
@@ -171,6 +174,7 @@ public class BaseServerClientConsumer {
 	 * @throws InterruptedException
 	 * @throws ExecutionException
 	 */
+	@SuppressWarnings({"rawtypes","unchecked"})
 	private void dealWithFileTransferTask() throws InterruptedException, ExecutionException{
 		while(true){
 			final ClientFileTransfer clientFileTransfer = BaseServerQueue.getClientFileTransferQueue().take();
@@ -181,10 +185,23 @@ public class BaseServerClientConsumer {
 						if(ServerCenterUtil.isOpenDetailLogInfo()){
 							LoggerUtils.info("传输开始: "+clientFileTransfer.toString());
 						}
+						
+						//增加前置拦截
+						List<Interrupt> interruptList = InterfaceExtensionLoader.getExtensionLoader(Interrupt.class).getActivateExtension(UrlUtils.getEmptyUrl("", ""), "", ClientFileTransfer.class.getName());
+						for (Interrupt interrupt : interruptList) {
+							interrupt.before(clientFileTransfer, ClientFileTransfer.class);
+						}
+						//处理文件传输
 						deaWithFileTransferConsumer(clientFileTransfer);
+						
+						//增加后置拦截
+						for (Interrupt interrupt : interruptList) {
+							interrupt.after(clientFileTransfer, ClientFileTransfer.class);
+						}
 						if(ServerCenterUtil.isOpenDetailLogInfo()){
 							LoggerUtils.info("传输结束: "+clientFileTransfer.toString());
 						}
+						
 					} catch (Exception e) {
 						LoggerUtils.error(e.getMessage());
 					}
