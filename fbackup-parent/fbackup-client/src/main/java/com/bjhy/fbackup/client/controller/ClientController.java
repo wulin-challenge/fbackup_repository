@@ -29,6 +29,8 @@ import com.bjhy.fbackup.client.domain.TransferMappingEntity;
 import com.bjhy.fbackup.client.util.InstanceUtil;
 import com.bjhy.fbackup.common.domain.ClientFileTransfer;
 import com.bjhy.fbackup.common.domain.DerbyPage;
+import com.bjhy.fbackup.common.domain.FileStatus;
+import com.bjhy.fbackup.common.exception.FBackupException;
 import com.bjhy.fbackup.common.util.ConstantUtil;
 import com.bjhy.fbackup.common.util.DerbyPageUtil;
 import com.bjhy.fbackup.common.util.FileUtil;
@@ -38,6 +40,7 @@ import com.bjhy.fbackup.common.util.RepositorySqlUtil;
 
 /**
  * 客户端控制层
+ * 为了方便,直接调用dao层,没有事务保障,因为即使出现了脏数据也能容忍
  * @author wubo
  */
 
@@ -132,29 +135,75 @@ public class ClientController {
 	}
 	
 	/**
+	 * 检测文件状态
+	 * @param request
+	 * @param response
+	 * @return
+	 */
+	@RequestMapping("checkFileStatus")
+	public @ResponseBody FileStatus checkFileStatus(HttpServletRequest request,HttpServletResponse response){
+		FileStatus fileStatus = new FileStatus();
+		try {
+		FileTransferEntityDao<String, FileTransferEntity> fileTransferEntityDao = InstanceUtil.getFileTransferEntityDao();
+		String sql = getQueryFileSql();
+		
+		Map<String,Object> conditions = new HashMap<String,Object>();
+		String relativeFilePath = request.getParameter("relativeFilePath");
+		String serverNumber = request.getParameter("serverNumber");
+		conditions.put("relativeFilePath", relativeFilePath);
+		conditions.put("serverNumber", serverNumber);
+		
+		FileTransferEntity fileTransferEntity = null;
+		synchronized (transferLock) {
+			List<FileTransferEntity> FileTransferList = fileTransferEntityDao.findListByCondition(sql,conditions);
+			if(FileTransferList != null && FileTransferList.size()>0){
+				fileTransferEntity = FileTransferList.get(0);
+				
+				String absoluteFilePath = fileTransferEntity.getAbsoluteFilePath();
+				File file = new File(absoluteFilePath);
+				
+				if(!file.exists()){
+					fileStatus.setCode(FileStatus.FILE_NO_EXIST);
+					if(fileTransferEntity != null){
+						try {
+							fileTransferEntityDao.deleteEntity(fileTransferEntity);
+						} catch (SQLException e1) {
+							LoggerUtils.warn("删除文件失败,文件相对路径:"+fileTransferEntity.getRelativeFilePath()+" ,详细错误如下:"+e1.getMessage());
+						}
+					}
+				}
+				if(file.exists() && file.length() == 0){
+					fileStatus.setCode(FileStatus.FILE_SIZE_IS_ZERO);
+				}
+			}
+		}
+		}catch(Throwable t){
+			fileStatus.setCode(FileStatus.UNKNOWN_EXCEPTION);
+		}
+		return fileStatus;
+	}
+	
+	/**
 	 * 文件下载
 	 * @param request
 	 */
 	@RequestMapping(value = "/fileDownload", method = RequestMethod.GET)
 	public void fileDownload(HttpServletRequest request,HttpServletResponse response) {
-		
-		String relativeFilePath = request.getParameter("relativeFilePath");
-		String serverNumber = request.getParameter("serverNumber");
+		FileInputStream fis = null;
+		File file = null;
+		Map<String,String> params = new HashMap<String,String>();
 		FileTransferEntityDao<String, FileTransferEntity> fileTransferEntityDao = InstanceUtil.getFileTransferEntityDao();
 		TransferMappingEntityDao<String, TransferMappingEntity> mappingDao = InstanceUtil.getTransferMappingEntityDao();
 		
-		String sql = "select f.* from base_file_transfer  f left join "
-					 +" (select m1.* from base_transfer_mapping m1 where m1.serverNumber=:serverNumber) m "
-					 +" on f.id = m.fileTransferId where m.serverNumber is null and relativeFilePath=:relativeFilePath";
+		String sql = getQueryFileSql();
 		
 		Map<String,Object> conditions = new HashMap<String,Object>();
+		String relativeFilePath = request.getParameter("relativeFilePath");
+		String serverNumber = request.getParameter("serverNumber");
 		conditions.put("relativeFilePath", relativeFilePath);
 		conditions.put("serverNumber", serverNumber);
 		
 		FileTransferEntity fileTransferEntity = null;
-		FileInputStream fis = null;
-		File file = null;
-		Map<String,String> params = new HashMap<String,String>();
 		try {
 			synchronized (transferLock) {
 				List<FileTransferEntity> FileTransferList = fileTransferEntityDao.findListByCondition(sql,conditions);
@@ -166,31 +215,34 @@ public class ClientController {
 					
 					String absoluteFilePath = fileTransferEntity.getAbsoluteFilePath();
 					file = new File(absoluteFilePath);
-					fis = new FileInputStream(file);
-				}
-			}
-			HttpClientUtil.downloadSingleFile(fis, (int)file.length(), params, request, response);
-			
-		} catch (Exception e1) {
-			String filePath = "";
-			if(fileTransferEntity != null){
-				filePath = fileTransferEntity.getAbsoluteFilePath();
-				try {
-					//如果下载失败就删除对应的映射数据
-					Map<String,Object> mappingParams = new HashMap<String,Object>();
-					mappingParams.put("fileTransferId", fileTransferEntity.getId());
-					mappingParams.put("serverNumber", serverNumber);
 					
-					List<TransferMappingEntity> findListByCondition = mappingDao.findListByCondition(mappingParams);
-					for (TransferMappingEntity mapping : findListByCondition) {
-						mappingDao.deleteEntity(mapping);
+					if(!file.exists()){
+						throw new FBackupException(FBackupException.FILE_NO_EXIST,"当前文件不存在,不进行传输");
 					}
-				} catch (SQLException e) {
-					e.printStackTrace();
+					
+					if(file.exists() && file.length() == 0){
+						throw new FBackupException(FBackupException.FILE_SIZE_IS_ZERO,"当前文件大小为 0 ,不进行传输");
+					}
 				}
-				fileTransferEntity = null;
 			}
-			LoggerUtils.error("被下载的文件下载失败,具体文件路径:"+filePath, e1);
+			if(file.length()>0){
+				fis = new FileInputStream(file);
+				HttpClientUtil.downloadSingleFile(fis, (int)file.length(), params, request, response);
+			}
+		} catch(FBackupException e){
+			if(e.isFileNoExist()){
+				if(fileTransferEntity != null){
+					try {
+						fileTransferEntityDao.deleteEntity(fileTransferEntity);
+					} catch (SQLException e1) {
+						LoggerUtils.warn("删除文件失败,文件相对路径:"+fileTransferEntity.getRelativeFilePath()+" ,详细错误如下:"+e.getMessage());
+					}
+				}
+			}else{
+				fileTransferEntity = dealWithErrorInfo(serverNumber, mappingDao, fileTransferEntity, e);
+			}
+		}catch (Exception e1) {
+			fileTransferEntity = dealWithErrorInfo(serverNumber, mappingDao, fileTransferEntity, e1);
 		}finally{
 			//关闭文件流
 			if(fis != null){
@@ -212,7 +264,18 @@ public class ClientController {
 			}
 		}
 	}
-	
+
+	/**
+	 * 得到查询文件sql
+	 * @return
+	 */
+	private String getQueryFileSql() {
+		String sql = "select f.* from base_file_transfer  f left join "
+					 +" (select m1.* from base_transfer_mapping m1 where m1.serverNumber=:serverNumber) m "
+					 +" on f.id = m.fileTransferId where m.serverNumber is null and relativeFilePath=:relativeFilePath";
+		return sql;
+	}
+
 	/**
 	 * 静态资源下载
 	 * @param request
@@ -221,17 +284,16 @@ public class ClientController {
 	@RequestMapping(value = "/staticsDownload", method = RequestMethod.GET)
 	public void staticsDownload(final HttpServletRequest request,final HttpServletResponse response) {
 		
-		String relativeFilePath = request.getParameter("relativeFilePath");
-		String absoluteFilePath = request.getParameter("absoluteFilePath");
-		String serverNumber = request.getParameter("serverNumber");
 		FileTransferEntityDao<String, FileTransferEntity> fileTransferEntityDao = InstanceUtil.getFileTransferEntityDao();
 		TransferMappingEntityDao<String, TransferMappingEntity> mappingDao = InstanceUtil.getTransferMappingEntityDao();
 		
-		String sql = "select f.* from base_file_transfer  f left join "
-				 +" (select m1.* from base_transfer_mapping m1 where m1.serverNumber=:serverNumber) m "
-				 +" on f.id = m.fileTransferId where m.serverNumber is null and relativeFilePath=:relativeFilePath";
-	
+		String sql = getQueryFileSql();
+		
+		String serverNumber = request.getParameter("serverNumber");
+		String absoluteFilePath = request.getParameter("absoluteFilePath");
+		
 		Map<String,Object> conditions = new HashMap<String,Object>();
+		String relativeFilePath = request.getParameter("relativeFilePath");
 		conditions.put("relativeFilePath", relativeFilePath);
 		conditions.put("serverNumber", serverNumber);
 		
@@ -300,5 +362,36 @@ public class ClientController {
 		}
 	}
 	
+	/**
+	 * 处理错误信息
+	 * @param serverNumber
+	 * @param mappingDao
+	 * @param fileTransferEntity
+	 * @param e1
+	 * @return
+	 */
+	private FileTransferEntity dealWithErrorInfo(String serverNumber,TransferMappingEntityDao<String, TransferMappingEntity> mappingDao, FileTransferEntity fileTransferEntity,
+			Exception e1) {
+		String filePath = "";
+		if(fileTransferEntity != null){
+			filePath = fileTransferEntity.getAbsoluteFilePath();
+			try {
+				//如果下载失败就删除对应的映射数据
+				Map<String,Object> mappingParams = new HashMap<String,Object>();
+				mappingParams.put("fileTransferId", fileTransferEntity.getId());
+				mappingParams.put("serverNumber", serverNumber);
+				
+				List<TransferMappingEntity> findListByCondition = mappingDao.findListByCondition(mappingParams);
+				for (TransferMappingEntity mapping : findListByCondition) {
+					mappingDao.deleteEntity(mapping);
+				}
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			fileTransferEntity = null;
+		}
+		LoggerUtils.error("被下载的文件下载失败,失败原因:"+e1.getMessage()+",具体文件路径:"+filePath);
+		return fileTransferEntity;
+	}
 
 }

@@ -44,6 +44,7 @@ public class ClientTelnet implements TelnetHandler{
 			//追踪栈传输文件
 			if("ls".equals(command)){
 				for (int i = 0; i < max; i++) {
+					channel.send("\r\n==========================================================\r\n\r\n");
 					sendLsInfo(i,channel, prompt);
 					if(max != 1){
 						try {

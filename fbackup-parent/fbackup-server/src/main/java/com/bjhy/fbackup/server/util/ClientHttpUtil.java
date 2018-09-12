@@ -30,10 +30,24 @@ public class ClientHttpUtil {
 	 * @param client
 	 * @param clientHttpUrl
 	 * @param relativeFilePath 相对文件路径
+	 * @param serverNumber 服务器的编号
 	 * @return
 	 */
 	public static String getFileDownloadUrl(XmlFbackup client,StringBuffer clientHttpUrl,String relativeFilePath,String serverNumber){
 		String httpUrl = clientHttpUrl.toString()+"/fileDownload?relativeFilePath="+relativeFilePath+"&serverNumber="+serverNumber;
+		return httpUrl;
+	}
+	
+	/**
+	 * 得到 checkFileStatus 的检测client端的文件状态
+	 * @param client
+	 * @param clientHttpUrl
+	 * @param relativeFilePath 相对文件路径
+	 * @param serverNumber 服务器的编号
+	 * @return
+	 */
+	public static String getCheckClientFileStatusUrl(XmlFbackup client,StringBuffer clientHttpUrl,String relativeFilePath,String serverNumber){
+		String httpUrl = clientHttpUrl.toString()+"/checkFileStatus?relativeFilePath="+relativeFilePath+"&serverNumber="+serverNumber;
 		return httpUrl;
 	}
 	

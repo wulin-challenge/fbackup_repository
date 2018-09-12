@@ -12,6 +12,7 @@ import java.util.concurrent.TimeUnit;
 
 import com.bjhy.fbackup.common.domain.ClientFileTransfer;
 import com.bjhy.fbackup.common.domain.DerbyPage;
+import com.bjhy.fbackup.common.domain.FileStatus;
 import com.bjhy.fbackup.common.domain.XmlClient;
 import com.bjhy.fbackup.common.domain.XmlFbackup;
 import com.bjhy.fbackup.common.extension.ExtensionLoader;
@@ -181,34 +182,56 @@ public class BaseServerClientConsumer {
 			clientFileTransferManagement.putNewTask(new ExecuteTask<String>(){
 				@Override
 				public String callTask() throws InterruptedException {
+					if(checkClientFileStatus(clientFileTransfer)){
+						dealWithFileTransferTask(clientFileTransfer);
+					}
+					return null;
+				}
+
+				private void dealWithFileTransferTask(final ClientFileTransfer clientFileTransfer) {
+					//增加前置拦截
+					List<Interrupt> interruptList = InterfaceExtensionLoader.getExtensionLoader(Interrupt.class).getActivateExtension(UrlUtils.getEmptyUrl("", ""), "", ClientFileTransfer.class.getName());
 					try {
 						if(ServerCenterUtil.isOpenDetailLogInfo()){
 							LoggerUtils.info("传输开始: "+clientFileTransfer.toString());
 						}
-						
-						//增加前置拦截
-						List<Interrupt> interruptList = InterfaceExtensionLoader.getExtensionLoader(Interrupt.class).getActivateExtension(UrlUtils.getEmptyUrl("", ""), "", ClientFileTransfer.class.getName());
+					
 						for (Interrupt interrupt : interruptList) {
 							interrupt.before(clientFileTransfer, ClientFileTransfer.class);
 						}
 						//处理文件传输
 						deaWithFileTransferConsumer(clientFileTransfer);
-						
-						//增加后置拦截
-						for (Interrupt interrupt : interruptList) {
-							interrupt.after(clientFileTransfer, ClientFileTransfer.class);
-						}
-						if(ServerCenterUtil.isOpenDetailLogInfo()){
-							LoggerUtils.info("传输结束: "+clientFileTransfer.toString());
-						}
-						
 					} catch (Exception e) {
 						LoggerUtils.error(e.getMessage());
 					}
-					return null;
+					//增加后置拦截
+					for (Interrupt interrupt : interruptList) {
+						interrupt.after(clientFileTransfer, ClientFileTransfer.class);
+					}
+					if(ServerCenterUtil.isOpenDetailLogInfo()){
+						LoggerUtils.info("传输结束: "+clientFileTransfer.toString());
+					}
 				}
 			});
 		}
+	}
+	
+	private boolean checkClientFileStatus(ClientFileTransfer clientFileTransfer){
+		String serverNumber = server.getXmlServer().getServerNumber();//服务的编号
+		XmlFbackup client = clientFileTransfer.getClient();
+		StringBuffer clientHttpUrl = ClientHttpUtil.getClientHttpUrl(client);
+		
+		String relativeFilePath = clientFileTransfer.getRelativeFilePath();
+		try {
+			relativeFilePath = URLEncoder.encode(relativeFilePath, "utf-8");
+			serverNumber = URLEncoder.encode(serverNumber, "utf-8");
+		} catch (Exception e) {
+			LoggerUtils.error("编码失败",e);
+		}
+		String httpUrl = ClientHttpUtil.getCheckClientFileStatusUrl(client, clientHttpUrl, relativeFilePath, serverNumber);
+		FileStatus fileStatus = HttpClientUtil.sendHttpGet(httpUrl, FileStatus.class);
+		
+		return fileStatus != null && fileStatus.isFileNormal();
 	}
 	
 //	/**
