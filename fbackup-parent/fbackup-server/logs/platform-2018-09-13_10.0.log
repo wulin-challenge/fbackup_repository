@@ -1,0 +1,2 @@
+2018-09-13 10:29:30,246 INFO [Curator-TreeCache-0] c.b.fbackup.common.util.LoggerUtils [LoggerUtils.java : 23] 客户端  客户端名称1(5199),节点Id: 192.168.0.103-20180913093750768 向zookeeper :localhost:2181 通知成功!
+2018-09-13 10:59:31,817 INFO [Curator-TreeCache-0] c.b.fbackup.common.util.LoggerUtils [LoggerUtils.java : 23] 客户端  客户端名称1(5199),节点Id: 192.168.0.103-20180913093750768 向zookeeper :localhost:2181 通知成功!

@@ -67,6 +67,66 @@ public class CenterPropUtil {
 	}
 	
 	/**
+	 * 
+	 * @param key
+	 * @param defaultValue 默认值
+	 * @param clazz 返回值类型
+	 * @param isRefresh 是否刷新
+	 * @return
+	 */
+	public static <T> T getProperty(String key,T defaultValue,Class<T> clazz,boolean isRefresh){
+		if(isRefresh){
+			try {
+				properties = new PropertiesConfiguration(new File(System.getProperty("user.dir") + CHAT_CONFIG_PROPERTY_LOC));
+			} catch (ConfigurationException e) {
+				e.printStackTrace();
+			}
+		}
+		return getProperty(key,defaultValue,clazz);
+	}
+	
+	/**
+	 * 
+	 * @param key 
+	 * @param defaultValue 默认值
+	 * @param clazz 返回值类型
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public static <T> T getProperty(String key,T defaultValue,Class<T> clazz){
+		if(clazz == boolean.class || clazz == Boolean.class){
+			boolean value = properties.getBoolean(key, (boolean) defaultValue);
+			Object val = value;
+			return (T) val;
+		}
+		
+		if(clazz == Integer.class || clazz == int.class){
+			Integer value = properties.getInteger(key, (Integer) defaultValue);
+			Object val = value;
+			return (T) val;
+		}
+		
+		if(clazz == Long.class || clazz == long.class){
+			Long value = properties.getLong(key, (Long) defaultValue);
+			Object val = value;
+			return (T) val;
+		}
+		
+		if(clazz == Short.class || clazz == short.class){
+			Short value = properties.getShort(key, (Short) defaultValue);
+			Object val = value;
+			return (T) val;
+		}
+		
+		if(clazz == String.class){
+			String value = properties.getString(key, (String) defaultValue);
+			Object val = value;
+			return (T) val;
+		}
+		return null;
+	}
+	
+	/**
 	 * 随机拿到第一个，该方法一般很少使用，除非确定当前的key值是全系统唯一的
 	 * @param key
 	 * @return

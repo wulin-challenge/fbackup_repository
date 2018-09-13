@@ -26,11 +26,13 @@ import com.bjhy.fbackup.client.dao.FileTransferEntityDao;
 import com.bjhy.fbackup.client.dao.TransferMappingEntityDao;
 import com.bjhy.fbackup.client.domain.FileTransferEntity;
 import com.bjhy.fbackup.client.domain.TransferMappingEntity;
+import com.bjhy.fbackup.client.util.ClientVersionUtil;
 import com.bjhy.fbackup.client.util.InstanceUtil;
 import com.bjhy.fbackup.common.domain.ClientFileTransfer;
 import com.bjhy.fbackup.common.domain.DerbyPage;
 import com.bjhy.fbackup.common.domain.FileStatus;
 import com.bjhy.fbackup.common.exception.FBackupException;
+import com.bjhy.fbackup.common.util.CommonCenterUtil;
 import com.bjhy.fbackup.common.util.ConstantUtil;
 import com.bjhy.fbackup.common.util.DerbyPageUtil;
 import com.bjhy.fbackup.common.util.FileUtil;
@@ -172,7 +174,7 @@ public class ClientController {
 						}
 					}
 				}
-				if(file.exists() && file.length() == 0){
+				if((file.exists() && file.length() == 0) && !CommonCenterUtil.getTransferZeroByteFile()){
 					fileStatus.setCode(FileStatus.FILE_SIZE_IS_ZERO);
 				}
 			}
@@ -220,12 +222,12 @@ public class ClientController {
 						throw new FBackupException(FBackupException.FILE_NO_EXIST,"当前文件不存在,不进行传输");
 					}
 					
-					if(file.exists() && file.length() == 0){
+					if((file.exists() && file.length() == 0) && !CommonCenterUtil.getTransferZeroByteFile()){
 						throw new FBackupException(FBackupException.FILE_SIZE_IS_ZERO,"当前文件大小为 0 ,不进行传输");
 					}
 				}
 			}
-			if(file.length()>0){
+			if(file.length()>0 || CommonCenterUtil.getTransferZeroByteFile()){
 				fis = new FileInputStream(file);
 				HttpClientUtil.downloadSingleFile(fis, (int)file.length(), params, request, response);
 			}

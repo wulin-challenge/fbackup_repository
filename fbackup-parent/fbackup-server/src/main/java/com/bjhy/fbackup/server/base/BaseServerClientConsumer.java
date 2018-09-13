@@ -370,7 +370,7 @@ public class BaseServerClientConsumer {
 			try {
 				clientFileTransfer.setClient(client);
 				BaseServerQueue.getClientFileTransferQueue().put(clientFileTransfer);
-			} catch (InterruptedException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}

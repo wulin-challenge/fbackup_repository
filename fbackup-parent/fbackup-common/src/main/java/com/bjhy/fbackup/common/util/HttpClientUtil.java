@@ -2,7 +2,6 @@ package com.bjhy.fbackup.common.util;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -14,7 +13,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import javax.management.RuntimeErrorException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -23,7 +21,6 @@ import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.Charsets;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -156,7 +153,7 @@ public class HttpClientUtil {
 			 if(response.getStatusLine().getStatusCode()==200){
 				 HttpEntity httpEntity = response.getEntity();
 				 long contentLength = httpEntity.getContentLength();
-				 if(contentLength == 0){
+				 if(contentLength == 0 && !CommonCenterUtil.getTransferZeroByteFile()){
 					 String httpUrl2 = URLDecoder.decode(httpUrl, "utf-8");
 					 throw new RuntimeException("当前  "+httpUrl2+" 没有返回任何文件流");
 				 }

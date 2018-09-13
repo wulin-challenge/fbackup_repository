@@ -86,4 +86,9 @@ public class ConstantUtil {
 	 */
 	public static final String SERVER_SYSN_ALL_CLIENT = "ALL";
 	
+	/**
+	 * 传输零字节文件的key
+	 */
+	public static final String TRANSFER_ZERO_BYTE_FILE_KEY = "transfer_zero_byte_file";
+	
 }
