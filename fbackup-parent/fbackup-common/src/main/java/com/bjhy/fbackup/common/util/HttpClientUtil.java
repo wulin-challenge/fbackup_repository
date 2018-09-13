@@ -24,6 +24,7 @@ import org.apache.commons.io.Charsets;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpUriRequest;
@@ -44,7 +45,16 @@ import com.google.common.collect.Iterables;
  * @author wubo
  *
  */
-public class HttpClientUtil {  
+public class HttpClientUtil {
+	/**
+	 * 普通请求超时 10秒
+	 */
+	private static final int NORMAL_TIMEOUT = 10000;
+	
+	/**
+	 * 文件操作超时 3 小时
+	 */
+	private static final int FILE_OPARATION_TIMEOUT = 10800000;
 	
 	/**
 	 * 发送get http请求
@@ -146,6 +156,11 @@ public class HttpClientUtil {
 	public static void receiveSingleFile(String httpUrl,Map<String,String> params,ReceiveSingleFileCallBack receiveSingleFileCallBack){
 		httpUrl += getGetParmas(httpUrl,params);
 		HttpGet httpGet = new HttpGet(httpUrl);
+		//使用HttpClient，一般都需要设置连接超时时间和获取数据超时时间。这两个参数很重要，目的是为了防止访问其他http时，由于超时导致自己的应用受影响。
+		RequestConfig requestConfig = RequestConfig.custom()  
+		        .setConnectTimeout(NORMAL_TIMEOUT).setConnectionRequestTimeout(NORMAL_TIMEOUT)  
+		        .setSocketTimeout(NORMAL_TIMEOUT).build();  
+		httpGet.setConfig(requestConfig);
         
         try (CloseableHttpClient closeableHttpClient = HttpClientBuilder.create().build();){
         	
@@ -163,6 +178,7 @@ public class HttpClientUtil {
 				 throw new RuntimeException("当前  "+httpUrl2+"  请求出错 ,状态码是"+response.getStatusLine().getStatusCode());
 			 }
 		} catch (Exception e) {
+			LoggerUtils.error("执行该 "+httpUrl+" 出错"+e.getMessage());
 			throw new RuntimeException(e);
 		} 
 	}
@@ -173,7 +189,6 @@ public class HttpClientUtil {
 	 * @param uploadCallBack
 	 */
 	public static void uploadSingleFile(HttpServletRequest request,UploadCallBack uploadCallBack){
-		
 		/**
 		 * 是否采用multipart的方式上传
 		 */
@@ -263,7 +278,11 @@ public class HttpClientUtil {
 	private static <T> String executeGet(String httpUrl,Map<String,String> params,Class<T> clazz){
 		httpUrl += getGetParmas(httpUrl,params);
 		HttpGet httpGet = new HttpGet(httpUrl);  
-		
+		//使用HttpClient，一般都需要设置连接超时时间和获取数据超时时间。这两个参数很重要，目的是为了防止访问其他http时，由于超时导致自己的应用受影响。
+		RequestConfig requestConfig = RequestConfig.custom()  
+		        .setConnectTimeout(NORMAL_TIMEOUT).setConnectionRequestTimeout(NORMAL_TIMEOUT)  
+		        .setSocketTimeout(NORMAL_TIMEOUT).build();  
+		httpGet.setConfig(requestConfig);
 		//执行get请求  
 		try (CloseableHttpClient closeableHttpClient = HttpClientBuilder.create().build();){
 			HttpResponse httpResponse = closeableHttpClient.execute(httpGet);
@@ -275,7 +294,7 @@ public class HttpClientUtil {
 				return data;
 			}
 		} catch (IOException e) {
-			LoggerUtils.error("执行该 "+httpUrl+" 出错",e);
+			LoggerUtils.error("执行该 "+httpUrl+" 出错"+e.getMessage());
 		}  
 		return "";
 	}

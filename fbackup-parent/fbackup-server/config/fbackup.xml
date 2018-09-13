@@ -8,7 +8,7 @@
 	<server-context>fbackup-server</server-context>
 	<server>
 		<!-- zookeeper的地址 -->
-		<zookeeper-address>localhost:2181</zookeeper-address>
+		<zookeeper-address>192.168.0.2:2181</zookeeper-address>
 		<!-- zookeeper的超时时间 -->
 		<zookeeper-timeout>5555</zookeeper-timeout>
 		<!-- 服务端的编号(若是监狱,则监狱编号) -->

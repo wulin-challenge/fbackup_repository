@@ -90,7 +90,7 @@ public class ClientTelnet implements TelnetHandler{
 				DerbyPage derbyPage = HttpClientUtil.sendHttpGet(derbyPageHttpUrl, DerbyPage.class);
 				
 				if(derbyPage == null){
-					return;
+					continue;
 				}
 				XmlClient xmlClient = client.getXmlClient();
 				StringBuilder send = new StringBuilder("["+count+"]["+number+"]"+xmlClient.getClientName());
