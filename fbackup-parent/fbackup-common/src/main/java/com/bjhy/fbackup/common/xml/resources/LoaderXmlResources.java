@@ -64,12 +64,21 @@ public class LoaderXmlResources {
 	 */
 	private void parseXmlFbackupElement(Element parent,XmlFbackup xmlFbackup){
 		Element serverTypeElement = parent.element("server-type");
+		Element serverIpElement = parent.element("server-ip");
 		Element serverPortElement = parent.element("server-port");
 		Element serverContextElement = parent.element("server-context");
 		
 		String serverType = serverTypeElement.getText();
+		String serverIp = null;
 		String serverPort = serverPortElement.getText();
 		String serverContext = serverContextElement.getText();
+		
+		if(serverIpElement != null){
+			String ip = serverIpElement.getText();
+			if(org.apache.commons.lang3.StringUtils.isNoneBlank(ip)){
+				serverIp = ip.trim();
+			}
+		}
 		
 		if(StringUtils.isEmpty(serverType)){
 			LoggerUtils.error("server-type 标签不能空");
@@ -87,7 +96,7 @@ public class LoaderXmlResources {
 		}
 		
 		xmlFbackup.setServerType(serverType);
-		String serverIp = NativeHostUtil.getHostAddress();
+		serverIp = StringUtils.isNotBlank(serverIp)?serverIp:NativeHostUtil.getHostAddress();
 		String serverId = serverIp+"-"+FileUtil.getLongId();
 		xmlFbackup.setServerIp(serverIp);
 		xmlFbackup.setServerId(serverId);

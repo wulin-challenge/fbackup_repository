@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <fbackup>
 	<server-type>client</server-type>
+	<server-ip></server-ip>
 	<server-port>5556</server-port>
 	<server-context>fbackup-client</server-context>
 	<client>
-		<zookeeper-address>localhost:2181</zookeeper-address>
+		<zookeeper-address>zxq:2181</zookeeper-address>
 		<zookeeper-timeout>5555</zookeeper-timeout>
 		<client-number>5199</client-number>
 		<client-name>客户端名称1</client-name>
