@@ -15,4 +15,10 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Documented
 public @interface FBackupListener {
+	
+	/**
+	 * 是否为 fbackup 项目内部实现,默认为true
+	 * @return 当返回 false 时,将不再使用 fbackup的内部实现,而是使用用户自定义的实现
+	 */
+	boolean isFbackupInternal() default true;
 }

@@ -10,6 +10,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import org.springframework.core.OrderComparator;
+
+import com.bjhy.fbackup.common.annotation.FBackupListener;
 import com.bjhy.fbackup.common.domain.ClientFileTransfer;
 import com.bjhy.fbackup.common.domain.DerbyPage;
 import com.bjhy.fbackup.common.domain.FileStatus;
@@ -17,7 +20,6 @@ import com.bjhy.fbackup.common.domain.XmlClient;
 import com.bjhy.fbackup.common.domain.XmlFbackup;
 import com.bjhy.fbackup.common.extension.ExtensionLoader;
 import com.bjhy.fbackup.common.interrupt.Interrupt;
-import com.bjhy.fbackup.common.thread.FixedThreadExecute;
 import com.bjhy.fbackup.common.thread.FixedThreadQueue;
 import com.bjhy.fbackup.common.util.ConstantUtil;
 import com.bjhy.fbackup.common.util.HttpClientUtil;
@@ -25,7 +27,6 @@ import com.bjhy.fbackup.common.util.ListenerUtil;
 import com.bjhy.fbackup.common.util.LoggerUtils;
 import com.bjhy.fbackup.server.util.ClientHttpUtil;
 import com.bjhy.fbackup.server.util.ServerCenterUtil;
-import com.bjhy.fbackup.server.util.ServerFileUtil;
 
 import cn.wulin.ioc.extension.InterfaceExtensionLoader;
 import cn.wulin.ioc.util.UrlUtils;
@@ -46,7 +47,17 @@ public class BaseServerClientConsumer {
 	
 	private static final List<Class<? extends FileStoreType>> fileStoreTypeList = ListenerUtil.getListenerClass(FileStoreType.class);
 	
+	/**
+	 * 要执行的文件存储类型实例列表
+	 */
+	private static final List<FileStoreType> executeFileStoreTypeInstances = new ArrayList<FileStoreType>();
+	
 	private static final List<Class<? extends StaticStoreType>> staticStoreTypeList = ListenerUtil.getListenerClass(StaticStoreType.class);
+	
+	/**
+	 * 要执行的静态类型存储类型实例列表
+	 */
+	private static final List<StaticStoreType> executeStaticStoreTypeInstances = new ArrayList<StaticStoreType>();
 	
 	/**
 	 * 客户端队列消费者(每次只开启一个线程其周期执行)
@@ -57,11 +68,6 @@ public class BaseServerClientConsumer {
 	 * 客户端文件传输队列消费者(每次只开启1个线程其周期执行)
 	 */
 	private final ScheduledThreadPoolExecutor clientFileTransferExecutor = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(1);
-	
-	/**
-	 * 清理定时器
-	 */
-	private final ScheduledThreadPoolExecutor cleanExecutor = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(1);
 	
 	/**
 	 * 服务端版本处理
@@ -95,11 +101,6 @@ public class BaseServerClientConsumer {
 			e.printStackTrace();
 		}
 		try {
-			excutorCleanFile();//执行清理7天前的文件目录
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		try {
 			excutorVersionScheduled();//执行服务端版本定时器
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -117,22 +118,6 @@ public class BaseServerClientConsumer {
 					ServerCenterUtil.checkSyncVersion();
 				} catch (Exception e) {
 					LoggerUtils.error("excutorVersionScheduled: ",e);
-				}
-			}
-		}, 30, 30, TimeUnit.SECONDS);
-	}
-	
-	/**
-	 * 执行清理7天前的文件目录
-	 */
-	public void excutorCleanFile(){
-		cleanExecutor.scheduleWithFixedDelay(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					ServerFileUtil.cleanSevenDayDirectory();
-				} catch (Exception e) {
-					LoggerUtils.error("excutorCleanFile: ",e);
 				}
 			}
 		}, 30, 30, TimeUnit.SECONDS);
@@ -263,14 +248,28 @@ public class BaseServerClientConsumer {
 	private void deaWithFileTransferConsumer(ClientFileTransfer clientFileTransfer) throws Exception{
 		String directoryType = clientFileTransfer.getDirectoryType();
 		if(XmlClient.DIRECTORY_TYPE_PICTURE.equals(directoryType)){
-			List<StaticStoreType> staticStoreTypeInstances = staticStoreTypeInstances();
-			for (StaticStoreType staticStoreType : staticStoreTypeInstances) {
+			
+			if(executeStaticStoreTypeInstances.size()==0){
+				synchronized (executeStaticStoreTypeInstances) {
+					if(executeStaticStoreTypeInstances.size()==0){
+						executeStaticStoreTypeInstances.addAll(staticStoreTypeInstances());
+					}
+				}
+			}
+			for (StaticStoreType staticStoreType : executeStaticStoreTypeInstances) {
 				staticStoreType.dealWithStatic(clientFileTransfer, server);
 			}
 			
 		}else if(XmlClient.DIRECTORY_TYPE_DATABASE.equals(directoryType)){
-			List<FileStoreType> fileStoreTypeInstances = fileStoreTypeInstances();
-			for (FileStoreType fileStoreType : fileStoreTypeInstances) {
+			
+			if(executeFileStoreTypeInstances.size()==0){
+				synchronized (executeFileStoreTypeInstances) {
+					if(executeFileStoreTypeInstances.size()==0){
+					    executeFileStoreTypeInstances.addAll(fileStoreTypeInstances());
+					}
+				}
+			}
+			for (FileStoreType fileStoreType : executeFileStoreTypeInstances) {
 				fileStoreType.dealWithFile(clientFileTransfer, server);
 			}
 		}
@@ -282,7 +281,7 @@ public class BaseServerClientConsumer {
 	 */
 	private List<StaticStoreType> staticStoreTypeInstances(){
 		List<StaticStoreType> staticStoreTypeInstances = new ArrayList<StaticStoreType>();
-		for (Class<? extends StaticStoreType> clazz : staticStoreTypeList) {
+		for (Class<? extends StaticStoreType> clazz : getStaticStoreTypeList()) {
 			StaticStoreType instance = ExtensionLoader.getInstance(clazz);
 			if(instance == null){
 				try {
@@ -305,7 +304,7 @@ public class BaseServerClientConsumer {
 	 */
 	private List<FileStoreType> fileStoreTypeInstances(){
 		List<FileStoreType> fileStoreTypeInstances = new ArrayList<FileStoreType>();
-		for (Class<? extends FileStoreType> clazz : fileStoreTypeList) {
+		for (Class<? extends FileStoreType> clazz : getFileStoreTypeList()) {
 			FileStoreType instance = ExtensionLoader.getInstance(clazz);
 			if(instance == null){
 				try {
@@ -320,6 +319,70 @@ public class BaseServerClientConsumer {
 			fileStoreTypeInstances.add(instance);
 		}
 		return fileStoreTypeInstances;
+	}
+	
+	/**
+	 * 得到文件存储类型实现列表
+	 * @return
+	 */
+	private  List<Class<? extends FileStoreType>> getFileStoreTypeList(){
+		//内部实现
+		List<Class<? extends FileStoreType>> fbackupInternal = new ArrayList<Class<? extends FileStoreType>>();
+		//非内部实现
+		List<Class<? extends FileStoreType>> nonFbackupInternal = new ArrayList<Class<? extends FileStoreType>>();
+		
+		for (Class<? extends FileStoreType> clazz : fileStoreTypeList) {
+			FBackupListener fBackupListener = clazz.getAnnotation(FBackupListener.class);
+			if(fBackupListener != null){
+				boolean internal = fBackupListener.isFbackupInternal();
+				if(internal){
+					fbackupInternal.add(clazz);
+				}else{
+					nonFbackupInternal.add(clazz);
+				}
+			}else{
+				nonFbackupInternal.add(clazz);
+			}
+		}
+		//若外部实现不为空,则使用外部实现,否则默认使用内部实现
+		if(nonFbackupInternal.size()>0){
+			OrderComparator.sort(nonFbackupInternal);
+			return nonFbackupInternal;
+		}
+		OrderComparator.sort(fbackupInternal);
+		return fbackupInternal;
+	}
+	
+	/**
+	 * 得到静态文件存储类型实现列表
+	 * @return
+	 */
+	private  List<Class<? extends StaticStoreType>> getStaticStoreTypeList(){
+		//内部实现
+		List<Class<? extends StaticStoreType>> fbackupInternal = new ArrayList<Class<? extends StaticStoreType>>();
+		//非内部实现
+		List<Class<? extends StaticStoreType>> nonFbackupInternal = new ArrayList<Class<? extends StaticStoreType>>();
+		
+		for (Class<? extends StaticStoreType> clazz : staticStoreTypeList) {
+			FBackupListener fBackupListener = clazz.getAnnotation(FBackupListener.class);
+			if(fBackupListener != null){
+				boolean internal = fBackupListener.isFbackupInternal();
+				if(internal){
+					fbackupInternal.add(clazz);
+				}else{
+					nonFbackupInternal.add(clazz);
+				}
+			}else{
+				nonFbackupInternal.add(clazz);
+			}
+		}
+		//若外部实现不为空,则使用外部实现,否则默认使用内部实现
+		if(nonFbackupInternal.size()>0){
+			OrderComparator.sort(nonFbackupInternal);
+			return nonFbackupInternal;
+		}
+		OrderComparator.sort(fbackupInternal);
+		return fbackupInternal;
 	}
 	
 	/**

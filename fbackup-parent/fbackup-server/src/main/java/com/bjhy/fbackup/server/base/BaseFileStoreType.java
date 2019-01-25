@@ -3,6 +3,9 @@ package com.bjhy.fbackup.server.base;
 import java.io.InputStream;
 import java.net.URLEncoder;
 import java.util.Collections;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import com.bjhy.fbackup.common.annotation.FBackupListener;
 import com.bjhy.fbackup.common.domain.ClientFileTransfer;
@@ -15,7 +18,19 @@ import com.bjhy.fbackup.server.util.ServerFileUtil;
 @FBackupListener
 @SuppressWarnings("unchecked")
 public class BaseFileStoreType implements FileStoreType{
-
+	
+	/**
+	 * 清理定时器
+	 */
+	private final ScheduledThreadPoolExecutor cleanExecutor = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(1);
+	
+	public BaseFileStoreType() {
+		try {
+			excutorCleanFile();//执行清理7天前的文件目录
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 
 	@Override
 	public void dealWithFile(final ClientFileTransfer clientFileTransfer,XmlFbackup server) {
@@ -40,4 +55,22 @@ public class BaseFileStoreType implements FileStoreType{
 			}
 		});
 	}
+	
+	/**
+	 * 执行清理7天前的文件目录
+	 */
+	public void excutorCleanFile(){
+		cleanExecutor.scheduleWithFixedDelay(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					ServerFileUtil.cleanSevenDayDirectory();
+				} catch (Exception e) {
+					LoggerUtils.error("excutorCleanFile: ",e);
+				}
+			}
+		}, 30, 30, TimeUnit.SECONDS);
+	}
+	
+	
 }

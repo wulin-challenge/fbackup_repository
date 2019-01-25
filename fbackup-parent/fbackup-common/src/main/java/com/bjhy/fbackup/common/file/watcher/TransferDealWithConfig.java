@@ -1,5 +1,7 @@
 package com.bjhy.fbackup.common.file.watcher;
 
+import com.bjhy.fbackup.common.util.FileUtil;
+
 /**
  * 传输处理的配置
  * @author wubo
@@ -11,7 +13,7 @@ public class TransferDealWithConfig {
 	 */
 	public void registerFileWatcher(String watcherDirectory){
 		TransferDealWith transferDealWith = new TransferDealWithAdapter();
-		new FileWatcher(watcherDirectory, transferDealWith);
+		new FileWatcher(FileUtil.replaceSpritAndNotEnd(watcherDirectory), transferDealWith);
 	}
 
 }
