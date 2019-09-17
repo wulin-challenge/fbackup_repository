@@ -240,7 +240,7 @@ public abstract class JdbcTemplateAbstractRepository<P,T> implements JdbcTemplat
 
 	@Override
 	public T findOneEntityBySql(String sql) throws SQLException {
-		return findOneEntityBySql(sql, Collections.EMPTY_MAP);
+		return (T) findOneEntityBySql(sql, Collections.EMPTY_MAP);
 	}
 
 	@Override

@@ -82,8 +82,9 @@ public class ClientController {
 	public @ResponseBody List<ClientFileTransfer> getPageclientFiles(int currentPage,int perPageTotal,String serverNumber){
 		
 		int skipNumber = DerbyPageUtil.getSkipNumber(currentPage, perPageTotal);
+		//子查询中查询的字段一定要指定,不要使用*代替,不然性能会极大的下降
 		String pageSql = "select f.* from base_file_transfer  f left join "
-					   +" (select m1.* from base_transfer_mapping m1 where m1.serverNumber=:serverNumber) m "
+					   +" (select m1.fileTransferId,m1.serverNumber from base_transfer_mapping m1 where m1.serverNumber=:serverNumber) m "
 					   +" on f.id = m.fileTransferId where m.serverNumber is null OFFSET "+skipNumber+" ROWS FETCH NEXT "+perPageTotal+" ROWS ONLY";
 		
 		Map<String,Object> params = new HashMap<String,Object>();
@@ -117,8 +118,9 @@ public class ClientController {
 		DerbyPage derbyPage = new DerbyPage();
 		
 		FileTransferEntityDao<String, FileTransferEntity> fileTransferEntityDao = InstanceUtil.getFileTransferEntityDao();
+		//子查询中查询的字段一定要指定,不要使用*代替,不然性能会极大的下降
 		String totalDataSql = "select count(1) from base_file_transfer  f left join "
-							+" (select m1.* from base_transfer_mapping m1 where m1.serverNumber=:serverNumber) m "
+							+" (select m1.fileTransferId,m1.serverNumber from base_transfer_mapping m1 where m1.serverNumber=:serverNumber) m "
 							+" on f.id = m.fileTransferId where m.serverNumber is null";
 		
 		Map<String,Object> totalDataParams = new HashMap<String,Object>();
@@ -272,8 +274,9 @@ public class ClientController {
 	 * @return
 	 */
 	private String getQueryFileSql() {
+		//子查询中查询的字段一定要指定,不要使用*代替,不然性能会极大的下降
 		String sql = "select f.* from base_file_transfer  f left join "
-					 +" (select m1.* from base_transfer_mapping m1 where m1.serverNumber=:serverNumber) m "
+					 +" (select m1.fileTransferId,m1.serverNumber from base_transfer_mapping m1 where m1.serverNumber=:serverNumber) m "
 					 +" on f.id = m.fileTransferId where m.serverNumber is null and relativeFilePath=:relativeFilePath";
 		return sql;
 	}

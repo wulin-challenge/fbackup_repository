@@ -74,7 +74,7 @@ public class ConstantUtil {
 	/**
 	 * derby每页分页的数量
 	 */
-	public static final int DERBY_PAGE_PER_PAGE_NUMBER = 10;
+	public static final int DERBY_PAGE_PER_PAGE_NUMBER = 500;
 	
 	/**
 	 * 静态资源类型
