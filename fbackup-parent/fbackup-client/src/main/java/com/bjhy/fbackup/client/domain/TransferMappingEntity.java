@@ -1,5 +1,6 @@
 package com.bjhy.fbackup.client.domain;
 
+import com.bjhy.fbackup.common.annotation.Column;
 import com.bjhy.fbackup.common.annotation.EntityTable;
 import com.bjhy.fbackup.common.annotation.Id;
 
@@ -25,6 +26,7 @@ public class TransferMappingEntity {
 	/**
 	 * 文件传输的Id
 	 */
+	@Column(name="fileTransferId",length=45,indexCommand="create index idx_ft_id on base_transfer_mapping(fileTransferId)")
 	private String fileTransferId;
 	
 	/**

@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -29,6 +30,7 @@ public class InitRepository {
 	 * 创建表的语句
 	 */
 	private StringBuffer createTableSql = new StringBuffer("create table ");
+	private List<String> createIndexSql = new ArrayList<String>();
 	
 	/**
 	 * 创建的表名
@@ -55,6 +57,7 @@ public class InitRepository {
 				initRepository.dealWithIdAndColumn(clazz); //处理Id和column两个注解
 				initRepository.dealWithSuffix();//处理后缀
 				initRepository.executeCreateTable();//执行创建表语句
+				initRepository.executeCreateIndex();//执行创建索引语句
 			} catch (Exception e) {
 				LoggerUtils.error("生成表语句失败",e);
 			}
@@ -93,6 +96,37 @@ public class InitRepository {
 		}
 	}
 	
+	/**
+	 * 执行创建索引语句
+	 */
+	private void executeCreateIndex(){
+		JdbcTemplate jdbcTemplate = ExtensionLoader.getInstance(JdbcTemplate.class);
+		if(jdbcTemplate != null){
+			Statement stmt = null;
+			Connection conn = null;
+			try {
+				conn = jdbcTemplate.getDataSource().getConnection();
+				stmt = conn.createStatement();
+				
+				for (String indexSql : createIndexSql) {
+					try {
+						stmt.executeUpdate(indexSql);
+					} catch (SQLException e) {
+						LoggerUtils.info(indexSql+" 索引已经存在!"+e.getMessage());
+					}
+				}
+			} catch (SQLException e) {
+				LoggerUtils.error("创建索引失败!"+e.getMessage());
+			}finally{
+				try {
+					stmt.close();
+					conn.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
 	
 	/**
 	 * 处理EntityTable 得到表名
@@ -149,6 +183,7 @@ public class InitRepository {
 	private void dealWithColumn(Field field,int i){
 		Column column = field.getAnnotation(Column.class);
 		if(column != null){
+			addIndexCommand(column);//添加索引sql命令
 			//列的名称
 			String name = getColumnName(column, field);
 			
@@ -200,6 +235,17 @@ public class InitRepository {
 			name = field.getName();
 		}
 		return name;
+	}
+	
+	/**
+	 * 添加索引sql命令
+	 * @param column
+	 */
+	private void addIndexCommand(Column column) {
+		String indexCommand = column.indexCommand();
+		if(StringUtils.isNotBlank(indexCommand)) {
+			createIndexSql.add(indexCommand.trim());
+		}
 	}
 	
 	/**

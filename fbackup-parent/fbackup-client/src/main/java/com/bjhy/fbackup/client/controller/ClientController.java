@@ -59,9 +59,15 @@ public class ClientController {
 	 */
 	@RequestMapping("getClientAllFiles")
 	public @ResponseBody List<ClientFileTransfer> getClientAllFiles(String serverNumber){
-		String sql = "select f.* from base_file_transfer  f left join "
-				   +" (select m1.* from base_transfer_mapping m1 where m1.serverNumber=:serverNumber) m "
-				   +" on f.id = m.fileTransferId where m.serverNumber is null ";
+		//子查询中查询的字段一定要指定,不要使用*代替,不然性能会极大的下降
+//		String sql = "select f.* from base_file_transfer  f left join "
+//				   +" (select m1.* from base_transfer_mapping m1 where m1.serverNumber=:serverNumber) m "
+//				   +" on f.id = m.fileTransferId where m.serverNumber is null ";
+		
+		//第二次优化,放弃子查询,使用关联查询来替代
+		String sql = "select f.* from base_file_transfer f "
+						+ "left join base_transfer_mapping m on f.id = m.fileTransferId and m.serverNumber=:serverNumber "
+						+ "where m.serverNumber is null ";
 	
 		Map<String,Object> params = new HashMap<String,Object>();
 		params.put("serverNumber",serverNumber);
@@ -83,9 +89,14 @@ public class ClientController {
 		
 		int skipNumber = DerbyPageUtil.getSkipNumber(currentPage, perPageTotal);
 		//子查询中查询的字段一定要指定,不要使用*代替,不然性能会极大的下降
-		String pageSql = "select f.* from base_file_transfer  f left join "
-					   +" (select m1.fileTransferId,m1.serverNumber from base_transfer_mapping m1 where m1.serverNumber=:serverNumber) m "
-					   +" on f.id = m.fileTransferId where m.serverNumber is null OFFSET "+skipNumber+" ROWS FETCH NEXT "+perPageTotal+" ROWS ONLY";
+//		String pageSql = "select f.* from base_file_transfer  f left join "
+//					   +" (select m1.fileTransferId,m1.serverNumber from base_transfer_mapping m1 where m1.serverNumber=:serverNumber) m "
+//					   +" on f.id = m.fileTransferId where m.serverNumber is null OFFSET "+skipNumber+" ROWS FETCH NEXT "+perPageTotal+" ROWS ONLY";
+		
+		//第二次优化,放弃子查询,使用关联查询来替代
+		String pageSql = "select f.* from base_file_transfer f "
+				+ "left join base_transfer_mapping m on f.id = m.fileTransferId and m.serverNumber=:serverNumber "
+				+ "where m.serverNumber is null OFFSET "+skipNumber+" ROWS FETCH NEXT "+perPageTotal+" ROWS ONLY";
 		
 		Map<String,Object> params = new HashMap<String,Object>();
 		params.put("serverNumber", serverNumber);
@@ -119,9 +130,14 @@ public class ClientController {
 		
 		FileTransferEntityDao<String, FileTransferEntity> fileTransferEntityDao = InstanceUtil.getFileTransferEntityDao();
 		//子查询中查询的字段一定要指定,不要使用*代替,不然性能会极大的下降
-		String totalDataSql = "select count(1) from base_file_transfer  f left join "
-							+" (select m1.fileTransferId,m1.serverNumber from base_transfer_mapping m1 where m1.serverNumber=:serverNumber) m "
-							+" on f.id = m.fileTransferId where m.serverNumber is null";
+//		String totalDataSql = "select count(1) from base_file_transfer  f left join "
+//							+" (select m1.fileTransferId,m1.serverNumber from base_transfer_mapping m1 where m1.serverNumber=:serverNumber) m "
+//							+" on f.id = m.fileTransferId where m.serverNumber is null";
+		
+		//第二次优化,放弃子查询,使用关联查询来替代
+		String totalDataSql = "select count(f.id) from base_file_transfer f "
+						+ "left join base_transfer_mapping m on f.id = m.fileTransferId and m.serverNumber=:serverNumber "
+						+ "where m.serverNumber is null ";
 		
 		Map<String,Object> totalDataParams = new HashMap<String,Object>();
 		totalDataParams.put("serverNumber", serverNumber);
@@ -275,9 +291,14 @@ public class ClientController {
 	 */
 	private String getQueryFileSql() {
 		//子查询中查询的字段一定要指定,不要使用*代替,不然性能会极大的下降
-		String sql = "select f.* from base_file_transfer  f left join "
-					 +" (select m1.fileTransferId,m1.serverNumber from base_transfer_mapping m1 where m1.serverNumber=:serverNumber) m "
-					 +" on f.id = m.fileTransferId where m.serverNumber is null and relativeFilePath=:relativeFilePath";
+//		String sql = "select f.* from base_file_transfer  f left join "
+//					 +" (select m1.fileTransferId,m1.serverNumber from base_transfer_mapping m1 where m1.serverNumber=:serverNumber) m "
+//					 +" on f.id = m.fileTransferId where m.serverNumber is null and relativeFilePath=:relativeFilePath";
+		
+		//第二次优化,放弃子查询,使用关联查询来替代
+		String sql = "select f.* from base_file_transfer f "
+					+ "left join base_transfer_mapping m on f.id = m.fileTransferId and m.serverNumber=:serverNumber "
+					+ "where m.serverNumber is null and f.relativeFilePath=:relativeFilePath";
 		return sql;
 	}
 

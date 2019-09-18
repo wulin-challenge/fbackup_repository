@@ -32,4 +32,10 @@ public @interface Column {
 	 * @return
 	 */
 	int length() default 255;
+	
+	/**
+	 * 创建索引的语句,例如: create index idx_ft_id on base_transfer_mapping(fileTransferId)
+	 * @return
+	 */
+	String indexCommand() default "";
 }

@@ -7,7 +7,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -353,6 +355,12 @@ public class RepositorySqlUtil {
 			try {
 				Method method = entity.getClass().getMethod("set"+methodName,field.getType());
 				Object value = data.get(getColumnName(field));
+				Class<?> targetValueType = field.getType();
+				//将日期转为字符串格式
+				if(value instanceof Date && targetValueType == String.class){
+					SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+					value = sdf.format(value);
+				}
 				method.invoke(entity,value);
 			} catch (Exception e) {
 				LoggerUtils.error(name+"转换为Entity时失败!!",e);
