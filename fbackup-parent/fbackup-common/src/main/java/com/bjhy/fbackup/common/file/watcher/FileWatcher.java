@@ -11,6 +11,7 @@ import java.nio.file.WatchService;
 import java.util.LinkedList;
 import java.util.List;
 
+import com.bjhy.fbackup.common.domain.DirectoryInfo;
 import com.bjhy.fbackup.common.util.FileUtil;
 
 /**
@@ -31,15 +32,15 @@ public class FileWatcher {
 	private Boolean destroy = false;
 	
 	/**
-	 *观察目录
+	 *观察目录信息
 	 */
-	private String watcherDirectory;
+	private DirectoryInfo watcherDirectoryInfo;
 	
 	private WatchService watcher;
 	
-	public FileWatcher(String watcherDirectory,TransferDealWith transferDealWith) {
+	public FileWatcher(DirectoryInfo directoryInfo,TransferDealWith transferDealWith) {
 		super();
-		this.watcherDirectory = watcherDirectory;
+		this.watcherDirectoryInfo = directoryInfo;
 		this.transferDealWith = transferDealWith;
 		fileWatcherRegister();
 	}
@@ -54,7 +55,7 @@ public class FileWatcher {
 			watcher = FileSystems.getDefault().newWatchService();
 			
 			//这是要监听的主目录
-			registerFileListener(watcherDirectory);
+			registerFileListener(FileUtil.replaceSpritAndNotEnd(watcherDirectoryInfo.getContent()));
 			
 			//注册监听子目录
 			registerSubDirectoryListener();
@@ -95,7 +96,7 @@ public class FileWatcher {
 	 * @throws IOException
 	 */
 	private void registerSubDirectoryListener() throws IOException {
-		File subDirectory = new File(watcherDirectory);
+		File subDirectory = new File(FileUtil.replaceSpritAndNotEnd(watcherDirectoryInfo.getContent()));
 		LinkedList<File> fList = new LinkedList<File>();
 		fList.addLast(subDirectory);
 		while (fList.size() > 0 ) {
@@ -140,7 +141,7 @@ public class FileWatcher {
 			e.printStackTrace();
 		}
 		
-		transferDealWith.fileCreateEvent(watckKey, event);
+		transferDealWith.fileCreateEvent(watcherDirectoryInfo,watckKey, event);
 	}
 	
 	/**
@@ -148,7 +149,7 @@ public class FileWatcher {
 	 * @param event
 	 */
 	private void fileModifyEvent(WatchKey watckKey,WatchEvent<?> event){
-		transferDealWith.fileModifyEvent(watckKey,event);
+		transferDealWith.fileModifyEvent(watcherDirectoryInfo,watckKey,event);
 	}
 	
 	/**
@@ -156,7 +157,7 @@ public class FileWatcher {
 	 * @param event
 	 */
 	private void fileDeleteEvent(WatchKey watckKey,WatchEvent<?> event){
-		transferDealWith.fileDeleteEvent(watckKey,event);
+		transferDealWith.fileDeleteEvent(watcherDirectoryInfo,watckKey,event);
 	}
 
 	public Boolean getDestroy() {

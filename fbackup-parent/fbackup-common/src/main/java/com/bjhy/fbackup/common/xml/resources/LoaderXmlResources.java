@@ -1,16 +1,16 @@
 package com.bjhy.fbackup.common.xml.resources;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
+import org.dom4j.Attribute;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 
+import com.bjhy.fbackup.common.domain.DirectoryInfo;
 import com.bjhy.fbackup.common.domain.XmlClient;
 import com.bjhy.fbackup.common.domain.XmlFbackup;
 import com.bjhy.fbackup.common.domain.XmlServer;
@@ -144,22 +144,20 @@ public class LoaderXmlResources {
 		
 		Element readDirectoryListElement = parent.element("read-directory-list");
 		List<Element> elements = readDirectoryListElement.elements("read-directory");
+		
 		for (Element element : elements) {
-			String readDirectoryContent = element.getText();
-			readDirectoryContent = FileUtil.replaceSpritAndEnd(readDirectoryContent.trim());
-			
+			String content = element.getText();
+			content = FileUtil.replaceSpritAndEnd(content.trim());
 			String directoryType = element.attribute("directory-type").getText().trim();
-			directoryType = XmlClient.getDirectoryType(directoryType);
-			
-			Map<String, List<String>> readDirectory = xmlClient.getReadDirectory();
-			//设置图片路径目录和数据库文件路径目录
-			if(readDirectory.containsKey(directoryType)){
-				readDirectory.get(directoryType).add(readDirectoryContent);
-			}else{
-				List<String> pictureList = new ArrayList<String>();
-				pictureList.add(readDirectoryContent);
-				readDirectory.put(directoryType,pictureList);
+
+			String customField = null;
+			Attribute attribute = element.attribute("custom-field");
+			if(attribute != null && attribute.getText() != null) {
+				customField = attribute.getText().trim();
 			}
+			
+			DirectoryInfo directoryInfo = new DirectoryInfo(directoryType, content, customField);
+			xmlClient.getDirectoryList().add(directoryInfo);
 		}
 		return xmlClient;
 	}
@@ -185,22 +183,20 @@ public class LoaderXmlResources {
 		
 		Element storeDirectoryListElement = parent.element("store-directory-list");
 		List<Element> elements = storeDirectoryListElement.elements("store-directory");
+		
 		for (Element element : elements) {
-			String storeDirectoryContent = element.getText();
-			storeDirectoryContent = FileUtil.replaceSpritAndEnd(storeDirectoryContent.trim());
+			String content = element.getText();
+			content = FileUtil.replaceSpritAndEnd(content.trim());
+			String directoryType = element.attribute("directory-type").getText().trim();
 			
-			String storeType = element.attribute("store-type").getText().trim();
-			storeType = XmlServer.getStoreType(storeType);
-			
-			Map<String, List<String>> storeDirectory = xmlServer.getStoreDirectory();
-			//设置图片路径目录和数据库文件路径目录
-			if(storeDirectory.containsKey(storeType)){
-				storeDirectory.get(storeType).add(storeDirectoryContent);
-			}else{
-				List<String> storeList = new ArrayList<String>();
-				storeList.add(storeDirectoryContent);
-				storeDirectory.put(storeType,storeList);
+			String customField = null;
+			Attribute attribute = element.attribute("custom-field");
+			if(attribute != null && attribute.getText() != null) {
+				customField = attribute.getText().trim();
 			}
+			
+			DirectoryInfo directoryInfo = new DirectoryInfo(directoryType, content, customField);
+			xmlServer.getDirectoryList().add(directoryInfo);
 		}
 		return xmlServer;
 	}

@@ -1,0 +1,2 @@
+server=com.bjhy.fbackup.server.core.telnet.command.ServerTelnet
+client=com.bjhy.fbackup.server.core.telnet.command.ClientTelnet

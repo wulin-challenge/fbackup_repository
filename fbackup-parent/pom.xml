@@ -25,5 +25,7 @@
   	<module>fbackup-converter</module>
   	<module>fbackup-client-database</module>
   	<module>fbackup-statics-agent</module>
+  	<module>fbackup-server-core</module>
+  	<module>fbackup-client-core</module>
   </modules>
 </project>

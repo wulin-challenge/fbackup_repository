@@ -50,9 +50,19 @@ public class ClientFileTransfer {
 	private String serverIp;
 	
 	/**
-	 * 目录类型(picture/database)
+	 * 目录类型
 	 */
 	private String directoryType;
+	
+	/**
+	 * 目录内容
+	 */
+	private String content;
+	
+	/**
+	 * 可自定义的扩展字段
+	 */
+	private String customField;
 	
 	/**
 	 * 客户端名称
@@ -68,7 +78,7 @@ public class ClientFileTransfer {
 	 * 客户端的配置信息
 	 */
 	private XmlFbackup client;
-
+	
 	public String getId() {
 		return id;
 	}
@@ -183,6 +193,22 @@ public class ClientFileTransfer {
 
 	public void setClient(XmlFbackup client) {
 		this.client = client;
+	}
+	
+	public String getContent() {
+		return content;
+	}
+
+	public void setContent(String content) {
+		this.content = content;
+	}
+
+	public String getCustomField() {
+		return customField;
+	}
+
+	public void setCustomField(String customField) {
+		this.customField = customField;
 	}
 
 	@Override

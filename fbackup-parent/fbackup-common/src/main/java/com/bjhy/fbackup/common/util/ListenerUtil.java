@@ -1,7 +1,10 @@
 package com.bjhy.fbackup.common.util;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.bjhy.fbackup.common.annotation.FBackupListener;
 import com.bjhy.fbackup.common.extension.ExtensionLoader;
@@ -21,8 +24,11 @@ public class ListenerUtil {
 		List<Class<? extends T>> classList = new ArrayList<Class<? extends T>>();
 		List<Class<?>> fbackupListenerList = ScanningPackage.findClassByPackageAndAnnotation(ConstantUtil.SCANNING_PACKAGE, FBackupListener.class);
 		for (Class<?> clazz : fbackupListenerList) {
-			Class<?>[] interfaces = clazz.getInterfaces();
-			inter:for (Class<?> class1 : interfaces) {
+			
+			Set<Class<?>> interfaceSet = new HashSet<Class<?>>();
+			getAllInterface(interfaceSet, clazz);
+			
+			inter:for (Class<?> class1 : interfaceSet) {
 				if(class1 == listenerClass){
 					Class<? extends T> listenerClassImpl =(Class<? extends T>) clazz;
 					classList.add(listenerClassImpl);
@@ -31,6 +37,24 @@ public class ListenerUtil {
 			}
 		}
 		return classList;
+	}
+	
+	/**
+	 * 得到指定类的所有接口
+	 * @param interfaceSet
+	 * @param clazz
+	 */
+	public static void getAllInterface(Set<Class<?>> interfaceSet,Class<?> clazz){
+		
+		Class<?>[] interfaces = clazz.getInterfaces();
+		if(interfaces != null) {
+			interfaceSet.addAll(new HashSet<Class<?>>(Arrays.asList(interfaces)));
+		}
+		
+		Class<?> superclass = clazz.getSuperclass();
+		if(superclass != null) {
+			getAllInterface(interfaceSet, superclass);
+		}
 	}
 	
 	/**

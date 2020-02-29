@@ -8,7 +8,7 @@
 	<server-context>fbackup-server</server-context>
 	<server>
 		<!-- zookeeper的地址 -->
-		<zookeeper-address>zxq:2181</zookeeper-address>
+		<zookeeper-address>wulinThinkPad:2181</zookeeper-address>
 		<!-- zookeeper的超时时间 -->
 		<zookeeper-timeout>5555</zookeeper-timeout>
 		<!-- 服务端的编号(若是监狱,则监狱编号) -->
@@ -17,9 +17,10 @@
 		<server-name>服务端名称</server-name>
 		<store-directory-list>
 				<!-- store-type="static" 该类型才是无用 -->
-<!-- 			<store-directory store-type="static">D:\temp\fbackup\store-directory1</store-directory> -->
+<!-- 			<store-directory directory-type="static">D:\temp\fbackup\store-directory1</store-directory> -->
 			<!-- 服务端备份客户端数据库文件的目录 -->
-			<store-directory store-type="file">F:/resources/temp/temp4/serverData</store-directory>
+			<store-directory directory-type="file" custom-field="no:0">F:/resources/temp/temp4/serverData</store-directory>
+			<store-directory directory-type="file" custom-field="yes:5">F:/resources/temp/temp4/serverData2</store-directory>
 		</store-directory-list>
 	</server>
 </fbackup>

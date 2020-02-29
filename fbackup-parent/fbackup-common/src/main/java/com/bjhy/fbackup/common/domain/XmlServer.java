@@ -1,9 +1,7 @@
 package com.bjhy.fbackup.common.domain;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * xml的服务端配置
@@ -42,11 +40,12 @@ public class XmlServer {
 	 */
 	private String serverName;
 	
-	/**
-	 * 存储目录目录(可以为多个)
-	 */
-	private Map<String,List<String>> storeDirectory = new LinkedHashMap<String,List<String>>();
+//	/**
+//	 * 存储目录目录(可以为多个)
+//	 */
+//	private Map<String,List<String>> storeDirectory = new LinkedHashMap<String,List<String>>();
 
+	private List<DirectoryInfo> directoryList = new ArrayList<DirectoryInfo>();
 
 	public String getZookeeperAddress() {
 		return zookeeperAddress;
@@ -63,14 +62,14 @@ public class XmlServer {
 	public void setZookeeperTimeout(long zookeeperTimeout) {
 		this.zookeeperTimeout = zookeeperTimeout;
 	}
-
-	public Map<String, List<String>> getStoreDirectory() {
-		return storeDirectory;
-	}
-
-	public void setStoreDirectory(Map<String, List<String>> storeDirectory) {
-		this.storeDirectory = storeDirectory;
-	}
+//
+//	public Map<String, List<String>> getStoreDirectory() {
+//		return storeDirectory;
+//	}
+//
+//	public void setStoreDirectory(Map<String, List<String>> storeDirectory) {
+//		this.storeDirectory = storeDirectory;
+//	}
 	
 	public String getServerNumber() {
 		return serverNumber;
@@ -88,18 +87,26 @@ public class XmlServer {
 		this.serverName = serverName;
 	}
 
-	/**
-	 * 得到存储类型
-	 * @param directoryType
-	 * @return
-	 */
-	public static String getStoreType(String storeType){
-		if(STORE_TYPE_STATIC.equalsIgnoreCase(storeType)){
-			return STORE_TYPE_STATIC;
-		}else if(STORE_TYPE_FILE.equalsIgnoreCase(storeType)){
-			return STORE_TYPE_FILE;
-		}
-		return "";
+	public List<DirectoryInfo> getDirectoryList() {
+		return directoryList;
 	}
+
+	public void setDirectoryList(List<DirectoryInfo> directoryList) {
+		this.directoryList = directoryList;
+	}
+	
+//	/**
+//	 * 得到存储类型
+//	 * @param directoryType
+//	 * @return
+//	 */
+//	public static String getStoreType(String storeType){
+//		if(STORE_TYPE_STATIC.equalsIgnoreCase(storeType)){
+//			return STORE_TYPE_STATIC;
+//		}else if(STORE_TYPE_FILE.equalsIgnoreCase(storeType)){
+//			return STORE_TYPE_FILE;
+//		}
+//		return "";
+//	}
 
 }

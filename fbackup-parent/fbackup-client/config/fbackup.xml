@@ -10,8 +10,8 @@
 		<client-number>5199</client-number>
 		<client-name>客户端名称1</client-name>
 		<read-directory-list>
-		<!-- 
-			<read-directory directory-type="picture">
+		 
+			<!-- <read-directory directory-type="picture">
 				<![CDATA[
 					[{
 						"staticRootPath":"E:/CAS_Platform/nginx-1.9.5/statics",
@@ -23,9 +23,10 @@
 						"databaseDriver":"oracle.jdbc.driver.OracleDriver"
 					}]
 				]]>
-			</read-directory>
-			-->
-			<read-directory directory-type="database">F:\resources\temp\temp4\clientData</read-directory>
+			</read-directory> -->
+			
+			<read-directory directory-type="file" custom-field="no:0">F:\resources\temp\temp4\clientData</read-directory>
+			<read-directory directory-type="file" custom-field="yes:5">F:\resources\temp\temp4\clientData2</read-directory>
 		</read-directory-list>
 	</client>
 

@@ -2,12 +2,11 @@ package com.bjhy.fbackup.common.test;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
 
-import org.apache.commons.io.monitor.FileAlterationListener;
 
+import com.bjhy.fbackup.common.domain.DirectoryInfo;
 import com.bjhy.fbackup.common.file.watcher.FileWatcher;
 import com.bjhy.fbackup.common.file.watcher.TransferDealWith;
 import com.bjhy.fbackup.common.util.FileUtil;
@@ -23,8 +22,10 @@ public class TestFileWatcher {
 		
 		String directory = "D:/temp/fbackup/fileWatcher";
 		
+		DirectoryInfo directoryInfo = new DirectoryInfo("file",directory,null);
+		
 		TransferDealWith transferDealWith = new FileWatcherImpl();
-		FileWatcher fileWatcher2 = new FileWatcher(directory,transferDealWith);
+		FileWatcher fileWatcher2 = new FileWatcher(directoryInfo,transferDealWith);
 		System.out.println(fileWatcher2);
 		System.in.read();
 	}
@@ -32,7 +33,7 @@ public class TestFileWatcher {
 	public static class FileWatcherImpl implements TransferDealWith{
 
 		@Override
-		public void fileCreateEvent(WatchKey watckKey, WatchEvent<?> event) {
+		public void fileCreateEvent(DirectoryInfo directoryInfo,WatchKey watckKey, WatchEvent<?> event) {
 			update("create", watckKey, event);
 			System.out.println();
 //			FileObserve
@@ -40,13 +41,13 @@ public class TestFileWatcher {
 		}
 
 		@Override
-		public void fileModifyEvent(WatchKey watckKey, WatchEvent<?> event) {
+		public void fileModifyEvent(DirectoryInfo directoryInfo,WatchKey watckKey, WatchEvent<?> event) {
 			update("modify", watckKey, event);
 			System.out.println();
 		}
 
 		@Override
-		public void fileDeleteEvent(WatchKey watckKey, WatchEvent<?> event) {
+		public void fileDeleteEvent(DirectoryInfo directoryInfo,WatchKey watckKey, WatchEvent<?> event) {
 //			update("delete", watckKey, event);
 			System.out.println();
 		}

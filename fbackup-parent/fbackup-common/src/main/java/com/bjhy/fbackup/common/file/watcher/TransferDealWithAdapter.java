@@ -5,6 +5,7 @@ import java.nio.file.WatchKey;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.bjhy.fbackup.common.domain.DirectoryInfo;
 import com.bjhy.fbackup.common.extension.ExtensionLoader;
 import com.bjhy.fbackup.common.util.ListenerUtil;
 import com.bjhy.fbackup.common.util.LoggerUtils;
@@ -19,26 +20,26 @@ public class TransferDealWithAdapter implements TransferDealWith{
 	private static final List<Class<? extends TransferDealWith>> transferDealWithList = ListenerUtil.getListenerClass(TransferDealWith.class);
 
 	@Override
-	public void fileCreateEvent(WatchKey watckKey, WatchEvent<?> event) {
+	public void fileCreateEvent(DirectoryInfo directoryInfo,WatchKey watckKey, WatchEvent<?> event) {
 		List<TransferDealWith> transferDealWithInstances = transferDealWithInstances();
 		for (TransferDealWith transferDealWith : transferDealWithInstances) {
-			transferDealWith.fileCreateEvent(watckKey, event);
+			transferDealWith.fileCreateEvent(directoryInfo,watckKey, event);
 		}
 	}
 
 	@Override
-	public void fileModifyEvent(WatchKey watckKey, WatchEvent<?> event) {
+	public void fileModifyEvent(DirectoryInfo directoryInfo,WatchKey watckKey, WatchEvent<?> event) {
 		List<TransferDealWith> transferDealWithInstances = transferDealWithInstances();
 		for (TransferDealWith transferDealWith : transferDealWithInstances) {
-			transferDealWith.fileModifyEvent(watckKey, event);
+			transferDealWith.fileModifyEvent(directoryInfo,watckKey, event);
 		}
 	}
 
 	@Override
-	public void fileDeleteEvent(WatchKey watckKey, WatchEvent<?> event) {
+	public void fileDeleteEvent(DirectoryInfo directoryInfo,WatchKey watckKey, WatchEvent<?> event) {
 		List<TransferDealWith> transferDealWithInstances = transferDealWithInstances();
 		for (TransferDealWith transferDealWith : transferDealWithInstances) {
-			transferDealWith.fileDeleteEvent(watckKey, event);
+			transferDealWith.fileDeleteEvent(directoryInfo,watckKey, event);
 		}
 	}
 	

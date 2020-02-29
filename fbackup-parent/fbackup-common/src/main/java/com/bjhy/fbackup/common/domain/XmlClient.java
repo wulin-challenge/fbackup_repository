@@ -1,8 +1,7 @@
 package com.bjhy.fbackup.common.domain;
 
-import java.util.LinkedHashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * xml的客户端配置
@@ -12,14 +11,9 @@ import java.util.Map;
 public class XmlClient {
 	
 	/**
-	 * 图片
+	 * 文件
 	 */
-	public static final String DIRECTORY_TYPE_PICTURE = "picture";
-	
-	/**
-	 * 数据库
-	 */
-	public static final String DIRECTORY_TYPE_DATABASE = "database";
+	public static final String DIRECTORY_TYPE_FILE = "file";
 	
 	/**
 	 * zookeeper地址
@@ -41,10 +35,12 @@ public class XmlClient {
 	 */
 	private String clientName;
 	
-	/**
-	 * 读取目录(可以为多个)
-	 */
-	private Map<String,List<String>> readDirectory = new LinkedHashMap<String,List<String>>();
+	private List<DirectoryInfo> directoryList = new ArrayList<DirectoryInfo>();
+//	
+//	/**
+//	 * 读取目录(可以为多个)
+//	 */
+//	private Map<String,List<String>> readDirectory = new LinkedHashMap<String,List<String>>();
 
 	public String getZookeeperAddress() {
 		return zookeeperAddress;
@@ -54,13 +50,13 @@ public class XmlClient {
 		this.zookeeperAddress = zookeeperAddress;
 	}
 
-	public Map<String, List<String>> getReadDirectory() {
-		return readDirectory;
-	}
-
-	public void setReadDirectory(Map<String, List<String>> readDirectory) {
-		this.readDirectory = readDirectory;
-	}
+//	public Map<String, List<String>> getReadDirectory() {
+//		return readDirectory;
+//	}
+//
+//	public void setReadDirectory(Map<String, List<String>> readDirectory) {
+//		this.readDirectory = readDirectory;
+//	}
 
 	public long getZookeeperTimeout() {
 		return zookeeperTimeout;
@@ -70,19 +66,19 @@ public class XmlClient {
 		this.zookeeperTimeout = zookeeperTimeout;
 	}
 	
-	/**
-	 * 得到目录类型
-	 * @param directoryType
-	 * @return
-	 */
-	public static String getDirectoryType(String directoryType){
-		if(DIRECTORY_TYPE_PICTURE.equalsIgnoreCase(directoryType)){
-			return DIRECTORY_TYPE_PICTURE;
-		}else if(DIRECTORY_TYPE_DATABASE.equalsIgnoreCase(directoryType)){
-			return DIRECTORY_TYPE_DATABASE;
-		}
-		return "";
-	}
+//	/**
+//	 * 得到目录类型
+//	 * @param directoryType
+//	 * @return
+//	 */
+//	public static String getDirectoryType(String directoryType){
+//		if(DIRECTORY_TYPE_PICTURE.equalsIgnoreCase(directoryType)){
+//			return DIRECTORY_TYPE_PICTURE;
+//		}else if(DIRECTORY_TYPE_DATABASE.equalsIgnoreCase(directoryType)){
+//			return DIRECTORY_TYPE_DATABASE;
+//		}
+//		return "";
+//	}
 
 	public String getClientNumber() {
 		return clientNumber;
@@ -98,5 +94,9 @@ public class XmlClient {
 
 	public void setClientName(String clientName) {
 		this.clientName = clientName;
+	}
+
+	public List<DirectoryInfo> getDirectoryList() {
+		return directoryList;
 	}
 }

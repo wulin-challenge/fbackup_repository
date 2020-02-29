@@ -27,7 +27,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.bjhy</groupId>
-			<artifactId>fbackup-common</artifactId>
+			<artifactId>fbackup-server-core</artifactId>
 			<version>1.0.1-SNAPSHOT</version>
 			<exclusions>
 				<exclusion>

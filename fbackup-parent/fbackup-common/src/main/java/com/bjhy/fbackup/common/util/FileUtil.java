@@ -149,13 +149,13 @@ public class FileUtil {
 	}
 	
 	/**
-	 * 得到七天前的目录
+	 * 得到指定天数之前的目录
 	 * @return
 	 */
-	public static String getBeforeSevenDirectory(){
+	public static String getBeforeSpecifyDayDirectory(int numberDay){
 		Calendar calendar = Calendar.getInstance();
 		calendar.setTime(new Date());
-		calendar.add(Calendar.DAY_OF_MONTH, -7);
+		calendar.add(Calendar.DAY_OF_MONTH, -numberDay);
 		Date date = calendar.getTime();
 		return getYearMonthDay(date);
 	}
